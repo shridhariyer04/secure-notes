@@ -8,12 +8,13 @@ export default function About() {
           <br />
           Designed for simplicity and security, it’s your go-to for confidential note-taking.
           <br />
-          Created with love 
-          <a 
-            href="https://github.com/shridhariyer04" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          Created with love{" "}
+          <a
+            href="https://github.com/your-github-username"
+            target="_blank"
+            rel="noopener noreferrer"
             className="github-link"
+            style={{ color: "white", textDecoration: "none", fontWeight: "bold" }}
           >
             @shridhar
           </a>
