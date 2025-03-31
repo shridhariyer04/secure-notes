@@ -1,5 +1,6 @@
-import Link from 'next/link';
-import "./globals.css"; // Ensure this import is here!
+import "./globals.css";
+import Providers from './provider'; // Adjust path if needed
+import NavBar from "./Navbar";
 
 export default function RootLayout({
   children,
@@ -9,15 +10,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <nav className="navbar">
-          <div className="nav-content">
-            <Link href="/" className="nav-title">Secure Notes</Link>
-            <div className="nav-links">
-              <Link href="/about" className="nav-link">About</Link>
-            </div>
-          </div>
-        </nav>
-        {children}
+        <Providers>
+          <NavBar />
+          {children}
+        </Providers>
       </body>
     </html>
   );

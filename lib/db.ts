@@ -2,8 +2,9 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
+
 if (!MONGODB_URI) {
-  throw new Error('MONGODB_URI is not defined in .env.local');
+  throw new Error('MONGODB_URI is not defined in environment variables');
 }
 
 interface MongooseCache {
@@ -12,6 +13,7 @@ interface MongooseCache {
 }
 
 declare global {
+  // eslint-disable-next-line no-var
   var mongoose: MongooseCache | undefined;
 }
 
@@ -23,6 +25,7 @@ if (!global.mongoose) {
 
 async function dbConnect() {
   if (cached.conn) {
+    console.log('Using cached MongoDB connection');
     return cached.conn;
   }
 
@@ -30,8 +33,13 @@ async function dbConnect() {
     const opts = {
       bufferCommands: false,
     };
+    console.log('Connecting to MongoDB with URI:', MONGODB_URI.replace(/:.*@/, ':<hidden>@')); // Hide password for logging
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log('MongoDB connected successfully');
       return mongoose;
+    }).catch(err => {
+      console.error('MongoDB connection error:', err);
+      throw err;
     });
   }
   cached.conn = await cached.promise;

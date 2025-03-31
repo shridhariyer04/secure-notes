@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "cookie": "^1.0.2",
     "dotenv": "^16.4.7",
@@ -17,8 +16,10 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
     "next": "15.2.2",
+    "next-auth": "^4.24.11",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^4.1.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

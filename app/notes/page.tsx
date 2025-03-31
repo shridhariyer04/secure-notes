@@ -1,6 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface Note {
   id: string;
@@ -10,81 +12,100 @@ interface Note {
 }
 
 export default function Notes() {
+  const { status } = useSession(); // Only destructure status since session isn't used
+  const router = useRouter();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [error, setError] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  // Redirect to signin if not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
+    }
+  }, [status, router]);
 
   // Load notes
   useEffect(() => {
-    const loadNotes = async () => {
-      try {
-        const res = await fetch('/api/notes');
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.message || 'Failed to fetch notes');
+    if (status === "authenticated") {
+      const loadNotes = async () => {
+        try {
+          const res = await fetch("/api/notes");
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.message || "Failed to fetch notes");
+          }
+          const data = await res.json();
+          console.log("Fetched notes data:", data);
+          setNotes(data);
+        } catch (err: unknown) {
+          const errorMessage = err instanceof Error ? err.message : "Failed to fetch notes";
+          setError(errorMessage);
+          console.error("Fetch error:", err);
+        } finally {
+          setLoading(false);
         }
-        const data = await res.json();
-        console.log('Fetched notes data:', data); // Log the response
-        setNotes(data);
-      } catch (err:any) {
-        setError(err.message);
-        console.error('Fetch error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadNotes();
-  }, []);
+      };
+      loadNotes();
+    }
+  }, [status]);
 
   // Create a new note
   const handleCreateNote = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const res = await fetch('/api/notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, content }),
       });
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to create note');
+        throw new Error(errorData.message || "Failed to create note");
       }
       const newNote = await res.json();
-      console.log('New note created:', newNote); // Log the new note
+      console.log("New note created:", newNote);
       setNotes([newNote, ...notes]);
-      setTitle('');
-      setContent('');
-    } catch (err:any) {
-      setError(err.message);
+      setTitle("");
+      setContent("");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to create note";
+      setError(errorMessage);
     }
   };
 
-  if (loading) return (
-    <div className="landing-container">
-      <div className="loader">
-        <div className="loading-text">Loading notes</div>
-        <div className="loading-dots">
-          <span className="dot"></span>
-          <span className="dot"></span>
-          <span className="dot"></span>
+  if (status === "loading" || loading) {
+    return (
+      <div className="landing-container">
+        <div className="loader">
+          <div className="loading-text">Loading notes</div>
+          <div className="loading-dots">
+            <span className="dot"></span>
+            <span className="dot"></span>
+            <span className="dot"></span>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  if (error) return (
-    <div className="landing-container">
-      <div className="error-container">
-        <div className="error-icon">!</div>
-        <div className="error-message">{error}</div>
-        <button onClick={() => window.location.reload()} className="btn">Try Again</button>
+  if (error) {
+    return (
+      <div className="landing-container">
+        <div className="error-container">
+          <div className="error-icon">!</div>
+          <div className="error-message">{error}</div>
+          <button onClick={() => window.location.reload()} className="btn">
+            Try Again
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="landing-container bg-gradient-to-br from-black via-gray-900 to-black min-h-screen flex items-center justify-center">
@@ -129,7 +150,9 @@ export default function Notes() {
           <div className="notes-section dark mt-8">
             <div className="notes-header flex justify-between items-center mb-4">
               <h2 className="notes-title text-2xl font-bold text-white">Your Notes</h2>
-              <div className="notes-count text-gray-400">{notes.length} {notes.length === 1 ? 'note' : 'notes'}</div>
+              <div className="notes-count text-gray-400">
+                {notes.length} {notes.length === 1 ? "note" : "notes"}
+              </div>
             </div>
 
             {notes.length === 0 ? (
@@ -141,20 +164,20 @@ export default function Notes() {
               <ul className="notes-list space-y-6 max-h-96 overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                 {notes.map((note) => (
                   <li
-                    key={note.id} // Ensure `note.id` is unique and a string
+                    key={note.id}
                     className="note-card dark bg-white/10 p-5 rounded-lg border border-white/20 hover:bg-white/20 hover:shadow-[0_0_12px_rgba(255,255,255,0.2)] transition-all duration-300 hover:-translate-y-1"
                   >
-                    <h3 className="note-title text-xl font-semibold text-white">{note.title || 'Untitled'}</h3>
-                    <p className="note-content text-gray-200 mt-2 leading-relaxed">{note.content || 'No content'}</p>
+                    <h3 className="note-title text-xl font-semibold text-white">{note.title || "Untitled"}</h3>
+                    <p className="note-content text-gray-200 mt-2 leading-relaxed">{note.content || "No content"}</p>
                     <div className="note-footer mt-3">
                       <span className="note-date text-gray-400">
                         {note.createdAt
-                          ? new Date(note.createdAt).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
+                          ? new Date(note.createdAt).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
                             })
-                          : 'Unknown date'}
+                          : "Unknown date"}
                       </span>
                     </div>
                   </li>
