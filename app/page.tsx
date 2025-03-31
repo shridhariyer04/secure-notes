@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="landing-container">
@@ -10,8 +12,12 @@ export default function Home() {
           Keep your thoughts safe with AES-256 encryption. Start now.
         </p>
         <div className="cta-buttons">
-          <button  className="btn">Sign Up</button>
-          <button className="btn secondary">Login</button>
+          <Link href="/auth/signup">
+            <button className="btn">Sign Up</button>
+          </Link>
+          <Link href="/auth/signin">
+            <button className="btn secondary">Login</button>
+          </Link>
         </div>
       </main>
     </div>
