@@ -12,7 +12,6 @@ export default function NavBar() {
         <Link href="/" className="nav-title">Secure Notes</Link>
         <div className="nav-links">
           <Link href="/about" className="nav-link">About</Link>
-          <Link href="/notes" className="nav-link">Notes</Link>
           {status === "loading" ? (
             <span className="nav-link">Loading...</span>
           ) : session ? (
